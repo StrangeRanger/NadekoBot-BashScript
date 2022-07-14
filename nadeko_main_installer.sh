@@ -310,12 +310,19 @@ while true; do
             clear -x
             ./nadeko_latest_installer.sh || exit_code_actions "$?"
 
-            # TODO: Figure out way to kill previous execution of the installer, possibly
-            #       an array of PIDs and the 'clean_up()' function. This way, cleaning
-            #       up and exiting text doesn't print duplicates.
-            # Execute the newly downloaded version of 'installer_prep.sh', so that all
-            # changes are applied.
-            exec "$_INSTALLER_PREP"
+            (
+                trap 'clean_up "130" "Exiting" "true" "4"' SIGINT
+                trap 'clean_up "143" "Exiting" "true" "4"' SIGTERM
+                trap 'clean_up "148" "Exiting" "true" "4"' SIGTSTP
+
+                # TODO: Figure out way to kill previous execution of the installer, possibly
+                #       an array of PIDs and the 'clean_up()' function. This way, cleaning
+                #       up and exiting text doesn't print duplicates.
+                # Execute the newly downloaded version of 'installer_prep.sh', so that all
+                # changes are applied.
+                exec "$_INSTALLER_PREP"
+                exit 4
+            )
             ;;
         2|3)
             ## B.1.
